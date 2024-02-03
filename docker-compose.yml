@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  neo4j:
+    image: neo4j:5.11
+    container_name: "${NEO4J_CONTAINER_NAME:-neo4j}"
+    ports:
+     - ${NEO4J_PORT:-7474}:7474
+     - ${NEO4J_BOLT_PORT:-7687}:7687
+    volumes:
+      - ${NEO4J_PROJ_DIR:-./neo4j}/data:/data
+      - ${NEO4J_PROJ_DIR:-./neo4j}/logs:/logs
+      - ${NEO4J_PROJ_DIR:-./neo4j}/plugins:/plugins
+      - ${NEO4J_PROJ_DIR:-./neo4j}/conf:/conf
+      - ${NEO4J_PROJ_DIR:-./neo4j}/import:/import
+    environment:
+      - NEO4J_AUTH=${NEO4J_USERNAME-neo4j}/${NEO4J_PASSWORD-password}
+      - NEO4J_PLUGINS=["apoc"]
+      # - NEO4J_db_tx__log_rotation_retention__policy=false
+    restart: unless-stopped
+    healthcheck:
+        test: ["CMD-SHELL", "curl --fail http://localhost:7474 || exit 1"]
+        interval: 10s
+        timeout: 10s
+        retries: 5
+    networks:
+      - neo4j_net
+
+networks:
+  neo4j_net:
+    driver: "bridge"
+
+
+# volumes:
+#   neo4j_data:
+#     driver: "local"
+#     name: "${NEO4J_CONTAINER_NAME:-neo4j}_data"
+#   neo4j_logs:
+#     driver: "local"
+#     name: "${NEO4J_CONTAINER_NAME:-neo4j}_logs"
